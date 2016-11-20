@@ -25,42 +25,46 @@
 */
 /**************************************************************************/
 
-#include "src/RF24.cpp"
-#include "SPI.h"
+#include "src/ELClient.cpp"
+#include "src/ELClientSocket.cpp"
 
-#define	PIPE_BRD	0	// Broadcast pipe
-#define	PIPE_UNC	1	// Unicast pipe
+ELClient espLink(&ESPLINKSERIAL);
 
-RF24 radio(NRF24_RADIOEN, NRF24_SPICS);
 
 /**************************************************************************/
 /*!
-    Init the nRF24L01 radio
+    Init esplink
 */
 /**************************************************************************/
-void vNet_Init_M2()
+void vNet_Init_M1()
 {
-	radio.begin();
-	radio.enableDynamicPayloads();
+	ELClientSocket udp(&espLink);
+	ESPLINKSERIAL.begin(9600);
+	bool ok;
+	do {
+		ok = esp.Sync();			// sync up with esp-link, blocks for up to 2 seconds
+		if (!ok) VNET_LOG(F("EL-Client sync failed!")); VNET_LOG("\r\n");
+	} while(!ok);
+	
+	#if (VNET_DEBUG)
+	esp.GetWifiStatus();
+	ELClientPacket *packet;
+	if ((packet=esp.WaitReturn()) != NULL) {
+		VNET_LOG(F("Wifi status: "));
+		VNET_LOG(packet->value);
+		VNET_LOG("\r\n");
+	}
+	#endif
 }
 
 /**************************************************************************/
 /*!
-	Set the pipe address for the radio
+	Cannot set address from esplink
 */
 /**************************************************************************/
-void vNet_SetAddress_M2(uint16_t addr)
+void vNet_SetAddress_M1(uint16_t addr)
 {
-	// Set the pipe address for broadcast
-	radio.openReadingPipe(PIPE_BRD, (NRF24_PIPE | ((uint64_t)VNET_ADDR_BRDC)));
-	radio.setAutoAck(PIPE_BRD, false);
-	
-	// Set the pipe address for unicast	
-	radio.openReadingPipe(PIPE_UNC, (NRF24_PIPE | ((uint64_t)addr)));
-	radio.setAutoAck(PIPE_UNC, true);
-	
-	// Start listening
-	radio.startListening();
+	return 1;
 }
 
 /**************************************************************************/
@@ -68,18 +72,34 @@ void vNet_SetAddress_M2(uint16_t addr)
 	Send data out
 */
 /**************************************************************************/
-uint8_t vNet_Send_M2(uint16_t addr, oFrame *frame, uint8_t len)
+uint8_t vNet_Send_M1(uint16_t addr, oFrame *frame, uint8_t len)
 {
+	
+	uint16_t vNet_port;
+
+	// Define the standard vNet port
+	vNet_port = ETH_PORT;
+	
 	if(len > VNET_MAX_PAYLOAD)
 		return VNET_DATA_FAIL;
 
 	// If is a vNet broadcast, move on the broadcast pipe
-	if((addr == VNET_ADDR_wBRDC) || (addr == VNET_ADDR_nBRDC))
-		addr = VNET_ADDR_BRDC;
+	//if((addr == VNET_ADDR_wBRDC) || (addr == VNET_ADDR_nBRDC))
+	//	addr = VNET_ADDR_BRDC;
 	
-	// Set the pipe address of the destination node
-	radio.openWritingPipe((NRF24_PIPE | ((uint64_t)addr)));
-
+	int err = udp.begin(addr, vNet_port, SOCKET_UDP, udpCb);
+	if (err < 0) {
+		VNET_LOG(F("UDP begin failed: "));
+		VNET_LOG(err);
+		VNET_LOG("\r\n");
+		//delay(10000);
+		//asm volatile ("  jmp 0");
+	}
+	
+	udp.send(frame,&len)
+	
+	
+	/*
 	// Before write, stop listening pipe
 	radio.stopListening();
 	
@@ -97,7 +117,7 @@ uint8_t vNet_Send_M2(uint16_t addr, oFrame *frame, uint8_t len)
 		radio.startListening();
 	
 		return NRF24_FAIL;
-	}	
+	}	*/
 }	
 
 /**************************************************************************/
@@ -105,28 +125,27 @@ uint8_t vNet_Send_M2(uint16_t addr, oFrame *frame, uint8_t len)
 	Check for incoming data
 */
 /**************************************************************************/
-uint8_t vNet_DataAvailable_M2()
+uint8_t vNet_DataAvailable_M1()
 {
-	return radio.available();
+	return esp.Process();
+	/*if (packet != 0) 
+		return true;
+    else
+		return false;*/
 }
 
 /**************************************************************************/
 /*!
-	Retrieve data from the radio
+	Retrieve data from wifi
 */
 /**************************************************************************/
-uint8_t vNet_RetrieveData_M2(uint8_t *data)
+uint8_t vNet_RetrieveData_M1(uint8_t *data)
 {
-	uint8_t* data_pnt = data;
+	/* uint8_t* data_pnt = data;
 
 	uint8_t len = radio.getDynamicPayloadSize();
 	uint8_t state = radio.read(data, len);
-	/*uint8_t state = 0;
-	if(radio.available()){
-		radio.read(data, len);
-		state = 1;
-	}
-	else return 0;*/
+	
 	//if(!state)	return 0;					// Just skip out
 	
 	// The nRF24L01 support small payloads and it could be cut just before sending
@@ -137,39 +156,99 @@ uint8_t vNet_RetrieveData_M2(uint8_t *data)
 	// Fill in the missing bytes
 	if(original_len > len)
 		for(uint8_t i=0; i<(original_len-len); i++)
-			*(data+len+i) = 0;
+			*(data+len+i) = 0; 
+	*/
 			
-	return state;
+	return 0;
 }
 
 /**************************************************************************/
 /*!
 	Actually isn't possible to get the source address for the last received
-	frame. Node based on nRF24 cannot identify automatically routing paths.
+	frame.
 */
 /**************************************************************************/
-uint16_t vNet_GetSourceAddress_M2()
+uint16_t vNet_GetSourceAddress_M1()
 {
 	return 0;
 }
 
 /**************************************************************************/
 /*!
-    Powerdown the radio
+    Set the base IP address
 */
 /**************************************************************************/
-void vNet_RadioSleep_M2()
+void eth_SetBaseIP(uint8_t *ip_addr)
 {
-	radio.powerDown();
+	return 0;
 }
 
 /**************************************************************************/
 /*!
-    Powerup the radio
+    Set the IP address
 */
 /**************************************************************************/
-void vNet_RadioWakeUp_M2()
+void eth_SetIPAddress(uint8_t *ip_addr)
 {
-	radio.powerUp();
+	return 0;
 }
 
+/**************************************************************************/
+/*!
+    Set the Subnet mask
+*/
+/**************************************************************************/
+void eth_SetSubnetMask(uint8_t *submask)
+{
+	return 0;
+}
+
+/**************************************************************************/
+/*!
+    Set the Gateway
+*/
+/**************************************************************************/
+void eth_SetGateway(uint8_t *gateway)
+{
+	return 0;
+}
+
+/**************************************************************************/
+/*!
+    Get the IP address
+*/
+/**************************************************************************/
+void eth_GetIP(uint8_t *ip_addr)
+{
+	return 0;
+}
+
+/**************************************************************************/
+/*!
+    Get the base IP address
+*/
+/**************************************************************************/
+void eth_GetBaseIP(uint8_t *ip_addr)
+{
+	return 0;	
+}
+
+/**************************************************************************/
+/*!
+    Get the Subnet mask
+*/
+/**************************************************************************/
+void eth_GetSubnetMask(uint8_t *submask)
+{
+	return 0;	
+}
+
+/**************************************************************************/
+/*!
+    Get the Gateway
+*/
+/**************************************************************************/
+void eth_GetGateway(uint8_t *gateway)
+{
+	return 0;	
+}

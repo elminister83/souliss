@@ -28,28 +28,21 @@
 
 */
 /**************************************************************************/
-#ifndef NRF24_USR_CFG_H
-#define NRF24_USR_CFG_H
+#ifndef ESPLINK_USR_CFG_H
+#define ESPLINK_USR_CFG_H
 
 /**************************************************************************/
 /*!
-	Select the wireless controller used for the board
+	Select the Serial connection
 	        
-		Value       
-        0x0         Disable (Default)
-        0x1         Enable
-		
-		NRF24		-  Nordic nRF24L01 and nRF24L01+ 2.4 GHz radio
+		Examples       
+        Serial
+		SoftwareSerial
 */
 /**************************************************************************/
-#ifndef NRF24_INSKETCH
-#	define NRF24  			0x0
-#endif
-/**************************************************************************/
 
-#ifndef	NRF24PINS_INSKETCH
-#	define	NRF24_RADIOEN		7				// Chip Enable Pin
-#	define	NRF24_SPICS			8				// SPI Chip Select Pin
+#ifndef	ESPLINK_SERIAL_INSKETCH
+#	define	ESPLINKSERIAL		Serial
 #endif
 
 #define NRF24_MAX_PAYLOAD   32					// Max payload allowed for this radio
@@ -58,22 +51,5 @@
 
 #define NRF24_SUCC			1
 #define NRF24_FAIL			0
-
-/**************************************************************************/
-/*!
-	Define an alias for SPI, redefine this alias if you are willing to use
-	a SoftwareSPI or any other alternative.
-	
-	At begin of the sketch (before the includes) add
-		
-		#define	nRF24SPI_INSKETCH
-		
-	and after declare an alternative SPI named as nRF24SPI.
-*/
-/**************************************************************************/
-
-#ifndef	nRF24SPI_INSKETCH
-#	define	nRF24SPI				SPI
-#endif
 
 #endif
