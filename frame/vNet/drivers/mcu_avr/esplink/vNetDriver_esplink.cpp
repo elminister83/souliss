@@ -29,7 +29,11 @@
 #include "src/ELClientSocket.cpp"
 
 ELClient espLink(&ESPLINKSERIAL);
-
+ELClientSocket udp(&espLink);
+ELClientPacket *packet;
+#if (VNET_DEBUG)
+	#define VNET_LOG LOG.print
+#endif
 
 /**************************************************************************/
 /*!
@@ -38,18 +42,19 @@ ELClient espLink(&ESPLINKSERIAL);
 /**************************************************************************/
 void vNet_Init_M1()
 {
-	ELClientSocket udp(&espLink);
+	VNET_LOG(F("Inizio!"));
+	
 	ESPLINKSERIAL.begin(9600);
 	bool ok;
 	do {
-		ok = esp.Sync();			// sync up with esp-link, blocks for up to 2 seconds
+		ok = espLink.Sync();			// sync up with esp-link, blocks for up to 2 seconds
 		if (!ok) VNET_LOG(F("EL-Client sync failed!")); VNET_LOG("\r\n");
 	} while(!ok);
 	
 	#if (VNET_DEBUG)
-	esp.GetWifiStatus();
-	ELClientPacket *packet;
-	if ((packet=esp.WaitReturn()) != NULL) {
+	espLink.GetWifiStatus();
+	
+	if ((packet=espLink.WaitReturn()) != NULL) {
 		VNET_LOG(F("Wifi status: "));
 		VNET_LOG(packet->value);
 		VNET_LOG("\r\n");
@@ -64,7 +69,7 @@ void vNet_Init_M1()
 /**************************************************************************/
 void vNet_SetAddress_M1(uint16_t addr)
 {
-	return 1;
+	
 }
 
 /**************************************************************************/
@@ -87,7 +92,8 @@ uint8_t vNet_Send_M1(uint16_t addr, oFrame *frame, uint8_t len)
 	//if((addr == VNET_ADDR_wBRDC) || (addr == VNET_ADDR_nBRDC))
 	//	addr = VNET_ADDR_BRDC;
 	
-	int err = udp.begin(addr, vNet_port, SOCKET_UDP, udpCb);
+	//int err = udp.begin(addr, vNet_port, SOCKET_UDP, udpCb);
+	int err = udp.begin(addr, vNet_port, SOCKET_UDP);
 	if (err < 0) {
 		VNET_LOG(F("UDP begin failed: "));
 		VNET_LOG(err);
@@ -96,7 +102,7 @@ uint8_t vNet_Send_M1(uint16_t addr, oFrame *frame, uint8_t len)
 		//asm volatile ("  jmp 0");
 	}
 	
-	udp.send(frame,&len)
+	udp.send(frame,&len);
 	
 	
 	/*
@@ -127,11 +133,11 @@ uint8_t vNet_Send_M1(uint16_t addr, oFrame *frame, uint8_t len)
 /**************************************************************************/
 uint8_t vNet_DataAvailable_M1()
 {
-	return esp.Process();
-	/*if (packet != 0) 
+	packet = espLink.Process();
+	if (packet != 0) 
 		return true;
     else
-		return false;*/
+		return false;
 }
 
 /**************************************************************************/
@@ -180,7 +186,6 @@ uint16_t vNet_GetSourceAddress_M1()
 /**************************************************************************/
 void eth_SetBaseIP(uint8_t *ip_addr)
 {
-	return 0;
 }
 
 /**************************************************************************/
@@ -190,7 +195,6 @@ void eth_SetBaseIP(uint8_t *ip_addr)
 /**************************************************************************/
 void eth_SetIPAddress(uint8_t *ip_addr)
 {
-	return 0;
 }
 
 /**************************************************************************/
@@ -200,7 +204,6 @@ void eth_SetIPAddress(uint8_t *ip_addr)
 /**************************************************************************/
 void eth_SetSubnetMask(uint8_t *submask)
 {
-	return 0;
 }
 
 /**************************************************************************/
@@ -210,7 +213,6 @@ void eth_SetSubnetMask(uint8_t *submask)
 /**************************************************************************/
 void eth_SetGateway(uint8_t *gateway)
 {
-	return 0;
 }
 
 /**************************************************************************/
@@ -220,7 +222,6 @@ void eth_SetGateway(uint8_t *gateway)
 /**************************************************************************/
 void eth_GetIP(uint8_t *ip_addr)
 {
-	return 0;
 }
 
 /**************************************************************************/
@@ -230,7 +231,6 @@ void eth_GetIP(uint8_t *ip_addr)
 /**************************************************************************/
 void eth_GetBaseIP(uint8_t *ip_addr)
 {
-	return 0;	
 }
 
 /**************************************************************************/
@@ -239,8 +239,7 @@ void eth_GetBaseIP(uint8_t *ip_addr)
 */
 /**************************************************************************/
 void eth_GetSubnetMask(uint8_t *submask)
-{
-	return 0;	
+{	
 }
 
 /**************************************************************************/
@@ -249,6 +248,5 @@ void eth_GetSubnetMask(uint8_t *submask)
 */
 /**************************************************************************/
 void eth_GetGateway(uint8_t *gateway)
-{
-	return 0;	
+{	
 }

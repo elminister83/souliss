@@ -56,11 +56,7 @@
 	
 	// Driver for Expressif ESP8266 WiFi via ESPLink
 	#if (WIFI_ESPLink)
-		#include "drivers/mcu_avr/esplink/vNetDriver_esplink.h"	
-	#else
-		#if
-		#pragma message "you have neither foo nor bar set up"
-		#endif
+		#include "drivers/mcu_avr/esplink/vNetDriver_esplink.h"
 	#endif	
 
 #endif
