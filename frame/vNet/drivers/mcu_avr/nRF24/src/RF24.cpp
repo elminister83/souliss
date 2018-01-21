@@ -5,7 +5,6 @@
  modify it under the terms of the GNU General Public License
  version 2 as published by the Free Software Foundation.
  */
-
 #include "nRF24L01.h"
 #include "RF24.h"
 
@@ -322,7 +321,7 @@ bool RF24::begin(void)
 
   // Then set the data rate to the slowest (and most reliable) speed supported by all
   // hardware.
-  setDataRate( RF24_1MBPS );
+  setDataRate( RF24_250KBPS );
 
 
   // Initialize CRC and request 2-byte (16bit) CRC <<<-

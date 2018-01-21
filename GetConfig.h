@@ -32,6 +32,7 @@
 #include "conf/chibi/chibiUsrCfg.h"
 #include "conf/nRF24/nRF24UsrCfg.h"
 #include "conf/RFM69/RFM69UsrCfg.h"
+#include "conf/EspLink/espLinkUsrCfg.h"
 #include "conf/usart/usartUsrCfg.h"												
 #include "conf/eth/ethUsrCfg.h"
 #include "conf/hardware/hwBoards.h"

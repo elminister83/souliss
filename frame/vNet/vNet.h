@@ -58,6 +58,11 @@
 		#include "drivers/mcu_esp32/ethESP32/vNetDriver_eth.h"	
 	#endif	
 	
+	// Driver for Expressif ESP8266 WiFi via ESPLink
+	#if (WIFI_ESPLink)
+		#include "drivers/mcu_avr/esplink/vNetDriver_esplink.h"
+	#endif	
+
 #endif
 
 #if (VNET_MEDIA2_ENABLE)
