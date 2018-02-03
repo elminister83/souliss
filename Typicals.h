@@ -83,6 +83,8 @@
 #define Souliss_T1n_Set					0x22		// Set a state
 #define Souliss_T1n_OnFeedback			0x23		// Report the actual state as ON
 #define Souliss_T1n_OffFeedback			0x24		// Report the actual state as OFF
+#define Souliss_T1n_ProgramChangeColor	0x25
+#define	Souliss_T1n_ColorToColor		0x26
 #define Souliss_T1n_Timed				0x30		// Timed ON
 #define Souliss_T1n_Timed_StdVal		0x40		// Timed ON Standard Value
 #define Souliss_T1n_PositionOnCmd		0x31		// Position constrained ON Command
@@ -106,6 +108,39 @@
 #define	Souliss_T1n_MaxBright			0xFF
 #define	Souliss_T1n_MinBright			0x00
 #define	Souliss_T1n_BrightStep			0x0A
+
+//Blue
+#define C1_R 0
+#define C1_G 0
+#define C1_B 255
+//Red
+#define C2_R 255
+#define C2_G 0
+#define C2_B 0
+//Green
+#define C3_R 0
+#define C3_G 255
+#define C3_B 100
+//Orange
+#define C4_R 255
+#define C4_G 71
+#define C4_B 0
+//Light Blue
+#define C5_R 0
+#define C5_G 168
+#define C5_B 255
+//Purple
+#define C6_R 255
+#define C6_G 0
+#define C6_B 77
+//Yellow
+#define C7_R 255
+#define C7_G 250
+#define C7_B 0
+
+byte colour_count = 0;
+#define colour_count_max 7
+
 
 /*
 
@@ -150,6 +185,26 @@
 #define Souliss_T1n_RGBLamp_B3			0xD2
 #define Souliss_T1n_RGBLamp_B4			0xD3
 #define Souliss_T1n_RGBLamp_B5			0xD4
+
+#define Souliss_T1n_RGBFade_R_R			0xFF
+#define Souliss_T1n_RGBFade_G_R			0x00
+#define Souliss_T1n_RGBFade_B_R			0x00
+
+#define Souliss_T1n_RGBFade_R_R2		0xFF
+#define Souliss_T1n_RGBFade_G_R2		0x66
+#define Souliss_T1n_RGBFade_B_R2		0x00
+
+#define Souliss_T1n_RGBFade_R_R3		0xFF
+#define Souliss_T1n_RGBFade_G_R3		0x99
+#define Souliss_T1n_RGBFade_B_R3		0x33
+
+#define Souliss_T1n_RGBFade_R_R4		0xFF
+#define Souliss_T1n_RGBFade_G_R4		0xCC
+#define Souliss_T1n_RGBFade_B_R4		0x00
+
+#define Souliss_T1n_RGBFade_R_R5		0xFF
+#define Souliss_T1n_RGBFade_G_R5		0xFF
+#define Souliss_T1n_RGBFade_B_R5		0x00
 
 // General defines for T2n
 #define Souliss_T2n_CloseCmd_SW			0x01		// Close Command

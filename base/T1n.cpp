@@ -624,7 +624,10 @@ U8 Souliss_Logic_T16(U8 *memory_map, U8 slot, U8 *trigger)
 			memory_map[MaCaco_OUT_s + slot + i] = memory_map[MaCaco_IN_s + slot + i];
 			memory_map[MaCaco_AUXIN_s + slot + i] = memory_map[MaCaco_IN_s + slot + i];
 			memory_map[MaCaco_IN_s + slot + i] = Souliss_T1n_RstCmd;
+			Serial.print(" - ");
+			Serial.print(memory_map[MaCaco_OUT_s + slot + i],HEX);
 		}
+		Serial.println();
 
 		// Set the brightness value as the high between R, G and B
 		memory_map[MaCaco_AUXIN_s + slot] = memory_map[MaCaco_AUXIN_s + slot + 1];
@@ -731,7 +734,6 @@ U8 Souliss_Logic_T16(U8 *memory_map, U8 slot, U8 *trigger)
 	{
 		// Increase the brightness
 		if(memory_map[MaCaco_AUXIN_s + slot] < (Souliss_T1n_MaxBright-Souliss_T1n_BrightStep))	memory_map[MaCaco_AUXIN_s + slot] = memory_map[MaCaco_AUXIN_s + slot] + Souliss_T1n_BrightStep;	// Increase the light value
-
 		// Get the base brightness
 		uint8_t base_bright =  memory_map[MaCaco_AUXIN_s + slot + 1];
 		if(memory_map[MaCaco_AUXIN_s + slot + 2] > base_bright)
@@ -761,7 +763,6 @@ U8 Souliss_Logic_T16(U8 *memory_map, U8 slot, U8 *trigger)
 	{
 		// Decrease the brightness
 		if(memory_map[MaCaco_AUXIN_s + slot] > (Souliss_T1n_MinBright+Souliss_T1n_BrightStep))	memory_map[MaCaco_AUXIN_s + slot] = memory_map[MaCaco_AUXIN_s + slot] - Souliss_T1n_BrightStep;		// Decrease the light value
-
 		// Get the base brightness
 		uint8_t base_bright =  memory_map[MaCaco_AUXIN_s + slot + 1];
 		if(memory_map[MaCaco_AUXIN_s + slot + 2] > base_bright)
@@ -831,6 +832,96 @@ U8 Souliss_Logic_T16(U8 *memory_map, U8 slot, U8 *trigger)
 			}
 		}
 	}
+	else if (memory_map[MaCaco_IN_s + slot] == Souliss_T1n_ColorToColor)	
+	{
+		for(U8 i=1 ; i < 4 ; i++){
+			if(memory_map[MaCaco_AUXIN_s + slot + i] == 255) memory_map[MaCaco_AUXIN_s + slot + i] = 254;
+			
+			if( memory_map[MaCaco_AUXIN_s + slot + i] > memory_map[MaCaco_OUT_s + slot + i]){ // SALGO
+				memory_map[MaCaco_OUT_s + slot + i] += 1;  //Souliss_T1n_BrightStep
+			}
+			else if( memory_map[MaCaco_AUXIN_s + slot + i] < memory_map[MaCaco_OUT_s + slot + i]){ // SCENDO
+				memory_map[MaCaco_OUT_s + slot + i] -= 1;  //Souliss_T1n_BrightStep
+			}
+
+		}
+			
+		if(  (memory_map[MaCaco_OUT_s + slot + 1] ==  memory_map[MaCaco_AUXIN_s + slot + 1]) &&  (memory_map[MaCaco_OUT_s + slot + 2] ==  memory_map[MaCaco_AUXIN_s + slot + 2]) && (memory_map[MaCaco_OUT_s + slot + 3] ==  memory_map[MaCaco_AUXIN_s + slot + 3]) )
+		{			
+			//attendo tot con il colore di destinazione
+			if(memory_map[MaCaco_AUXIN_s + slot] < 0xFF){
+				// attendo ancora 10
+				memory_map[MaCaco_AUXIN_s + slot] += 0x01;
+			}
+			else //esco e scelgo nuovo colore
+			{
+				memory_map[MaCaco_AUXIN_s + slot] += 0x00;
+				memory_map[MaCaco_IN_s + slot] = Souliss_T1n_ProgramChangeColor;
+			}
+		}	
+	}
+	else if (memory_map[MaCaco_IN_s + slot] == Souliss_T1n_ProgramChangeColor)
+	{	
+		// Set the change color mode
+		memory_map[MaCaco_IN_s + slot] = Souliss_T1n_RstCmd;
+		memory_map[MaCaco_IN_s + slot + 1] = Souliss_T1n_RstCmd;
+		memory_map[MaCaco_IN_s + slot + 2] = Souliss_T1n_RstCmd;
+		memory_map[MaCaco_IN_s + slot + 3] = Souliss_T1n_RstCmd;
+		memory_map[MaCaco_AUXIN_s + slot] = Souliss_T1n_RstCmd;
+		memory_map[MaCaco_AUXIN_s + slot + 1] = Souliss_T1n_RstCmd;
+		memory_map[MaCaco_AUXIN_s + slot + 2] = Souliss_T1n_RstCmd;
+		memory_map[MaCaco_AUXIN_s + slot + 3] = Souliss_T1n_RstCmd;
+	
+		/*
+		randomSeed(analogRead(0));
+		uint8_t numberR = (uint8_t) secureRandom(255);
+		randomSeed(analogRead(0));
+		uint8_t numberG = (uint8_t) secureRandom(255);
+		randomSeed(analogRead(0));
+		uint8_t numberB = (uint8_t) secureRandom(255); 
+		*/
+		uint8_t numberR;uint8_t numberG;uint8_t numberB;
+		if(colour_count < colour_count_max) colour_count++;
+		else colour_count = 1;
+
+		if(colour_count == 1){
+		numberR = C1_R;
+		numberG = C1_G;
+		numberB = C1_B;
+		} else if(colour_count == 2){
+		numberR = C2_R;
+		numberG = C2_G;
+		numberB = C2_B;
+		} else if(colour_count == 3){
+		numberR = C3_R;
+		numberG = C3_G;
+		numberB = C3_B;
+		} else if(colour_count == 4){
+		numberR = C4_R;
+		numberG = C4_G;
+		numberB = C4_B;
+		} else if(colour_count == 5){
+		numberR = C5_R;
+		numberG = C5_G;
+		numberB = C5_B;
+		} else if(colour_count == 6){
+		numberR = C6_R;
+		numberG = C6_G;
+		numberB = C6_B;
+		} else if(colour_count == 7){
+		numberR = C7_R;
+		numberG = C7_G;
+		numberB = C7_B;
+		}
+
+		memory_map[MaCaco_AUXIN_s + slot] = 0;
+		memory_map[MaCaco_AUXIN_s + slot + 1] = numberR;
+		memory_map[MaCaco_AUXIN_s + slot + 2] = numberG;
+		memory_map[MaCaco_AUXIN_s + slot + 3] = numberB;
+		memory_map[MaCaco_IN_s + slot] = Souliss_T1n_ColorToColor;
+		
+	}
+	
 	// Update the trigger
 	if(i_trigger)
 		*trigger = i_trigger;
@@ -857,13 +948,14 @@ void Souliss_T16_Timer(U8 *memory_map, U8 slot)
 		memory_map[MaCaco_IN_s + slot + 2] = Souliss_T1n_RstCmd;
 		memory_map[MaCaco_IN_s + slot + 3] = Souliss_T1n_RstCmd;
 	}
-
-	// Decrease brightness and check the expiration
-	if((memory_map[MaCaco_OUT_s + slot] == Souliss_T1n_GoodNight) && (memory_map[MaCaco_AUXIN_s + slot] <= (Souliss_T1n_MinBright+Souliss_T1n_BrightStep)))
-		memory_map[MaCaco_IN_s + slot] = Souliss_T1n_OffCmd;
-	else if((memory_map[MaCaco_OUT_s + slot] == Souliss_T1n_GoodNight))
-		memory_map[MaCaco_IN_s + slot] = Souliss_T1n_BrightDown;
-
+	// goodnight mode
+	if(memory_map[MaCaco_OUT_s + slot] == Souliss_T1n_GoodNight)
+	{
+		// Decrease brightness and check the expiration
+		if(memory_map[MaCaco_AUXIN_s + slot] <= (Souliss_T1n_MinBright+Souliss_T1n_BrightStep))
+			memory_map[MaCaco_IN_s + slot] = Souliss_T1n_OffCmd;
+		memory_map[MaCaco_IN_s + slot] = Souliss_T1n_BrightDown;	
+	}
 }
 
 /**************************************************************************/
