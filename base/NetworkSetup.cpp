@@ -164,7 +164,11 @@ void Souliss_SetIPAddress(U8* ip_address, U8* subnet_mask, U8* ip_gateway)
 
 	#if((MCU_TYPE == 0x02) || (MCU_TYPE == 0x03))	// Expressif ESP8266 or ESP32
 		U8 timeout=20;
-	
+
+		#ifdef HOST_NAME_INSKETCH
+		WiFi.hostname(HOST_NAME); // If HOST_NAME is defined set expressif name
+		#endif
+		
 		// If is the first time that we connect to WiFi.SSID
 		if(strcmp(WiFi.SSID().c_str(), WiFi_SSID) || strcmp(WiFi.psk().c_str(), WiFi_Password))
 		{
