@@ -163,7 +163,7 @@ void Souliss_SetIPAddress(U8* ip_address, U8* subnet_mask, U8* ip_gateway)
 	DEFAULT_BASEIPADDRESS[i-1]=0;						// The BASEIPADDRESS has last byte always zero
 
 	#if((MCU_TYPE == 0x02) || (MCU_TYPE == 0x03))	// Expressif ESP8266 or ESP32
-		U8 timeout=20;
+		U8 timeout=40;
 
 		#ifdef HOST_NAME_INSKETCH
 		WiFi.hostname(HOST_NAME); // If HOST_NAME is defined set expressif name
